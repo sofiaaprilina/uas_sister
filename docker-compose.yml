@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  php-apache-environment:
+    image: sofiaapr30/uas-sister
+    container_name: php-apache
+    depends_on:
+      - db
+    volumes:
+      - ./php/src:/var/www/html/
+    ports:
+      - 8000:80
+    networks:
+      - backend
+
+  db:
+    container_name: db
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: db_arsip
+    ports:
+      - "3306:3306"
+    volumes:
+      - db:/var/lib/mysql
+      - ./db_arsip.sql:/docker-entrypoint-initdb.d/db_arsip.sql
+    networks:
+      - backend
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - '3060:80'
+    restart: always
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+
+
+volumes:
+  db:
+
+networks:
+  backend:
+    name: backend-network
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/24
